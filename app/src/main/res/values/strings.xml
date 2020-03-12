@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Calculadora de Download</string>
+
+    <string name="days">Dia(s)</string>
+    <string name="hours">Hora(s)</string>
+    <string name="minutes">Min(s)</string>
+    <string name="seconds">Seg(s)</string>
+    <string name="lowTime">Menos de 1 Segundo</string>
+
+    <string name="terabyte">Terabyte</string>
+    <string name="gigabyte">Gigabyte</string>
+    <string name="megabyte">Megabyte</string>
+    <string name="kilobyte">Kilobyte</string>
+
+    <string name="kbps">Kbps</string>
+    <string name="mbps">Mbps</string>
+    <string name="gbps">Gbps</string>
+
+    <string name="fileSize">Tamanho do Arquivo</string>
+    <string name="connectionSpeed">Velocidade de Conexão</string>
+    <string name="errorMargin">Margem de erro -</string>
+
+
+</resources>
