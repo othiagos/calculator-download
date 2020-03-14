@@ -1,4 +1,4 @@
-package br.com.clust3rr.calculadoradedownload;
+package br.com.clust3rr.calculatordownload;
 
 import android.content.Context;
 

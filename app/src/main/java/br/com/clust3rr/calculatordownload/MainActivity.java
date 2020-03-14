@@ -1,4 +1,4 @@
-package br.com.clust3rr.calculadoradedownload;
+package br.com.clust3rr.calculatordownload;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -6,7 +6,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -45,23 +46,41 @@ public class MainActivity extends AppCompatActivity {
                 getText(R.string.mbps).toString(),
                 getText(R.string.gbps).toString()};
 
-        mFileSize.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        mFileSize.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
                 String fs = mFileSize.getText().toString();
                 String cs = mConnectionSpeed.getText().toString();
                 checkFields(fs, cs);
-                return false;
             }
         });
 
-        mConnectionSpeed.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        mConnectionSpeed.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
                 String fs = mFileSize.getText().toString();
                 String cs = mConnectionSpeed.getText().toString();
                 checkFields(fs, cs);
-                return false;
             }
         });
 
@@ -154,7 +173,8 @@ public class MainActivity extends AppCompatActivity {
         double milliseconds;
         double tax = (double) mSeekBar.getProgress() / 100 + 1;
 
-        /*         Bytes -> Gbytes
+        /*
+         *         Bytes -> Gbytes
          * Tbytes  1 * 1024 * 1024 * 1024 * 1024
          * Gbytes  1 * 1024 * 1024 * 1024
          * Mbytes  1 * 1024 * 1024
@@ -207,7 +227,8 @@ public class MainActivity extends AppCompatActivity {
         hours = (milliseconds / 3600000);
         days = (milliseconds / 86400000);
 
-        /* seconds 1000        = ms * 1000
+        /*
+         * seconds 1000        = ms * 1000
          * minutes 60000       = ms * 1000 * 60
          * hours   3600000‬     = ms * 1000 * 60 * 60
          * days    86400000‬    = ms * 1000 * 60 * 60 * 24
