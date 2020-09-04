@@ -3,7 +3,6 @@ package br.com.clust3rr.calculatordownload;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
@@ -36,25 +35,25 @@ public class MainActivity extends AppCompatActivity {
         mTax = findViewById(R.id.tax);
 
         mCharSequenceFileType = new CharSequence[]{
-                getText(R.string.kilobyte).toString(),
-                getText(R.string.megabyte).toString(),
-                getText(R.string.gigabyte).toString(),
-                getText(R.string.terabyte).toString()};
+                getString(R.string.kilobyte),
+                getString(R.string.megabyte),
+                getString(R.string.gigabyte),
+                getString(R.string.terabyte)
+        };
 
         mCharSequenceConnectionType = new CharSequence[]{
-                getText(R.string.kbps).toString(),
-                getText(R.string.mbps).toString(),
-                getText(R.string.gbps).toString()};
+                getString(R.string.kbps),
+                getString(R.string.mbps),
+                getString(R.string.gbps)
+        };
 
         mFileSize.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
             }
 
             @Override
@@ -68,12 +67,10 @@ public class MainActivity extends AppCompatActivity {
         mConnectionSpeed.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
             }
 
             @Override
@@ -85,10 +82,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @SuppressLint("DefaultLocale")
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                String tax = " " + progress + " %";
+                String tax = " " + progress + "%";
                 mTax.setText(tax);
                 String fs = mFileSize.getText().toString();
                 String cs = mConnectionSpeed.getText().toString();
@@ -97,31 +93,24 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
             }
-
         });
-
     }
 
-    @SuppressLint("SetTextI18n")
     @Override
     protected void onStart() {
         super.onStart();
-        mTax.setText(" " + mSeekBar.getProgress() + " %");
+        String text = " " + mSeekBar.getProgress() + "%";
+        mTax.setText(text);
     }
 
     private void checkFields(String fs, String cs) {
-        if (fs.equals("") || cs.equals("")) {
-            mResult.setText("");
-        } else {
-            result(fs, cs);
-        }
+        if (fs.equals("") || cs.equals("")) mResult.setText("");
+        else result(fs, cs);
     }
 
     public void buttonFileOnClick(View v) {
@@ -141,7 +130,6 @@ public class MainActivity extends AppCompatActivity {
                 dialog.cancel();
             }
         }).create().show();
-
     }
 
     public void buttonConnectionOnClick(View v) {
@@ -161,18 +149,9 @@ public class MainActivity extends AppCompatActivity {
                 dialog.cancel();
             }
         }).create().show();
-
     }
 
     private void result(String size, String speed) {
-        double fileSize = Double.parseDouble(size);
-        double connectionSpeed = Double.parseDouble(speed);
-        double fileSizeKbytes = 0;
-        double connectionSpeedKbytes = 0;
-        double timeInSeconds;
-        double milliseconds;
-        double tax = (double) mSeekBar.getProgress() / 100 + 1;
-
         /*
          *         Bytes -> Gbytes
          * Tbytes  1 * 1024 * 1024 * 1024 * 1024
@@ -187,6 +166,19 @@ public class MainActivity extends AppCompatActivity {
          * Kbytes  1 / 1024 / 1024
          * Bytes   1 / 1024 / 1024 / 1024
          */
+
+        double fileSize = 0;
+        double connectionSpeed = 0;
+        try {
+            fileSize = Double.parseDouble(size);
+            connectionSpeed = Double.parseDouble(speed);
+        } catch (NumberFormatException ignored) {
+        }
+        double fileSizeKbytes = 0;
+        double connectionSpeedKbytes = 0;
+        double timeInSeconds;
+        double milliseconds;
+        double tax = (double) mSeekBar.getProgress() / 100;
 
         CharSequence fileText = mBtnFile.getText();
         if (mCharSequenceFileType[0].equals(fileText)) {
@@ -208,25 +200,12 @@ public class MainActivity extends AppCompatActivity {
             connectionSpeedKbytes = connectionSpeed * 125 * 1000;
         }
 
-        timeInSeconds = fileSizeKbytes / connectionSpeedKbytes * tax;
+        timeInSeconds = fileSizeKbytes / (connectionSpeedKbytes * (1 - tax));
         milliseconds = timeInSeconds * 1000;
         mResult.setText(getTime(milliseconds));
-
     }
 
     private String getTime(Double milliseconds) {
-        double seconds;
-        double minutes;
-        double hours;
-        double days;
-
-        String time;
-
-        seconds = (milliseconds / 1000);
-        minutes = (milliseconds / 60000);
-        hours = (milliseconds / 3600000);
-        days = (milliseconds / 86400000);
-
         /*
          * seconds 1000        = ms * 1000
          * minutes 60000       = ms * 1000 * 60
@@ -234,29 +213,34 @@ public class MainActivity extends AppCompatActivity {
          * days    86400000‬    = ms * 1000 * 60 * 60 * 24
          */
 
-        String day = getText(R.string.days).toString();
-        String hour = getText(R.string.hours).toString();
-        String minute = getText(R.string.minutes).toString();
-        String second = getText(R.string.seconds).toString();
+        double seconds = (milliseconds / 1000);
+        double minutes = (milliseconds / 60000);
+        double hours = (milliseconds / 3600000);
+        double days = (milliseconds / 86400000);
 
-        if (days >= 1) {
-            time = (int) Math.floor(days) + " " + day + " " +
-                    (int) Math.floor(days * 24 % 24) + " " + hour + " " +
-                    (int) Math.floor(days * 24 * 60 % 60) + " " + minute + " " +
-                    (int) Math.floor(days * 24 * 60 * 60 % 60) + " " + second;
+        String day = getString(R.string.day);
+        String hour = getString(R.string.hour);
+        String minute = getString(R.string.minute);
+        String second = getString(R.string.second);
+
+        if (milliseconds.isInfinite()) {
+            return getString(R.string.infinity);
+        } else if (days >= 1) {
+            return (int) Math.floor(days) + "" + day + " " +
+                    (int) Math.floor(days * 24 % 24) + "" + hour + " " +
+                    (int) Math.floor(days * 24 * 60 % 60) + "" + minute + " " +
+                    (int) Math.floor(days * 24 * 60 * 60 % 60) + "" + second;
         } else if (hours >= 1) {
-            time = (int) Math.floor(hours) + " " + hour + " " +
-                    (int) Math.floor(hours * 60 % 60) + " " + minute + " " +
-                    (int) Math.floor(hours * 60 * 60 % 60) + " " + second;
+            return (int) Math.floor(hours) + "" + hour + " " +
+                    (int) Math.floor(hours * 60 % 60) + "" + minute + " " +
+                    (int) Math.floor(hours * 60 * 60 % 60) + "" + second;
         } else if (minutes >= 1) {
-            time = (int) Math.floor(minutes) + " " + minute + " " +
-                    (int) Math.floor(minutes * 60 % 60) + " " + second;
+            return (int) Math.floor(minutes) + "" + minute + " " +
+                    (int) Math.floor(minutes * 60 % 60) + "" + second;
         } else if (seconds >= 1) {
-            time = (int) Math.floor(seconds) + " " + second;
+            return (int) Math.floor(seconds) + "" + second;
         } else {
-            time = getText(R.string.lowTime).toString();
+            return getString(R.string.lowTime);
         }
-        return time;
     }
-
 }
