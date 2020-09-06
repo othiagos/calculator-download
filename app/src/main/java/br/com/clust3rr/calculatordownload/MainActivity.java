@@ -15,13 +15,39 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    private CharSequence[] mCharSequenceFileType, mCharSequenceConnectionType;
+    private static final double SIZE_BIT = 1;
     private EditText mFileSize, mConnectionSpeed;
     private Button mBtnFile, mBtnConnection;
     private TextView mResult, mTax;
     private static final int DEFAULT_MARGIN = 5;
-    private static final double YEAR_MILLIS = 31536000000d;
     private SeekBar mMarginRate;
+    private static final double SIZE_BYTE = SIZE_BIT * 8;
+    private static final double SIZE_KB = 1000d * SIZE_BYTE;
+    private static final double SIZE_MB = 1000 * SIZE_KB;
+    private static final double SIZE_GB = 1000 * SIZE_MB;
+    private static final double SIZE_TB = 1000 * SIZE_GB;
+    private static final double SIZE_Kb = 1000 * SIZE_BIT;
+    private static final double SIZE_Mb = 1000 * SIZE_Kb;
+    private static final double SIZE_Gb = 1000 * SIZE_Mb;
+    private static final double SIZE_Tb = 1000 * SIZE_Gb;
+    private static final double SIZE_KiB = 1024 * SIZE_BIT;
+    private static final double SIZE_MiB = 1024 * SIZE_KiB;
+    private static final double SIZE_GiB = 1024 * SIZE_MiB;
+    private static final double SIZE_TiB = 1024 * SIZE_GiB;
+    private static final double VEL_bit_S = SIZE_BIT;
+    private static final double VEL_byte_S = SIZE_BYTE;
+    private static final double VEL_Kb_S = SIZE_Kb;
+    private static final double VEL_KB_S = SIZE_KB;
+    private static final double VEL_Mb_S = SIZE_Mb;
+    private static final double VEL_MB_S = SIZE_MB;
+    private static final double VEL_Gb_S = SIZE_Gb;
+    private static final double VEL_GB_S = SIZE_GB;
+    private static final double TIME_S = 1;
+    private static final double TIME_MINUTE = TIME_S * 60;
+    private static final double TIME_HOUR = TIME_MINUTE * 60;
+    private static final double TIME_DAY = TIME_HOUR * 24;
+    private static final double TIME_YEAR = TIME_DAY * 365;
+    private String[] mCharSequenceFileType, mCharSequenceConnectionType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,17 +66,32 @@ public class MainActivity extends AppCompatActivity {
         mTax.setText(getString(R.string.errorMargin, DEFAULT_MARGIN));
 
         //
-        mCharSequenceFileType = new CharSequence[]{
-                getString(R.string.kilobyte),
-                getString(R.string.megabyte),
-                getString(R.string.gigabyte),
-                getString(R.string.terabyte)
+        mCharSequenceFileType = new String[]{
+                getString(R.string.size_bits),
+                getString(R.string.size_bytes),
+                getString(R.string.size_KB),
+                getString(R.string.size_MB),
+                getString(R.string.size_GB),
+                getString(R.string.size_TB),
+                getString(R.string.size_Kb),
+                getString(R.string.size_Mb),
+                getString(R.string.size_Gb),
+                getString(R.string.size_Tb),
+                getString(R.string.size_KiB),
+                getString(R.string.size_MiB),
+                getString(R.string.size_GiB),
+                getString(R.string.size_TiB)
         };
 
-        mCharSequenceConnectionType = new CharSequence[]{
-                getString(R.string.kbps),
-                getString(R.string.mbps),
-                getString(R.string.gbps)
+        mCharSequenceConnectionType = new String[]{
+                getString(R.string.vel_bit_s),
+                getString(R.string.vel_byte_s),
+                getString(R.string.vel_Kb_s),
+                getString(R.string.vel_KB_s),
+                getString(R.string.vel_Mb_s),
+                getString(R.string.vel_MB_s),
+                getString(R.string.vel_Gb_s),
+                getString(R.string.vel_GB_s)
         };
 
         mFileSize.addTextChangedListener(new TextWatcher() {
@@ -108,11 +149,10 @@ public class MainActivity extends AppCompatActivity {
             String cs = mConnectionSpeed.getText().toString();
             int mr = mMarginRate.getProgress();
 
-            if (fs.equals("") || cs.equals("")) {
+            if (fs.equals("") || cs.equals(""))
                 mResult.setText(getString(R.string.noTime));
-            } else {
-                mResult.setText(result(fs, cs, mr));
-            }
+            else
+                mResult.setText(calculateTimeToDownload(fs, cs, mr));
 
         }
 
@@ -122,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle(R.string.fileSize);
         int position = 0;
-        for (int i = 0; !(mCharSequenceFileType[i].equals(mBtnFile.getText())); i++)
+        for (int i = 0; !(mCharSequenceFileType[i].equals(mBtnFile.getText().toString())); i++)
             position = i + 1;
 
         dialog.setSingleChoiceItems(mCharSequenceFileType, position, new DialogInterface.OnClickListener() {
@@ -139,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle(R.string.connectionSpeed);
         int position = 0;
-        for (int i = 0; !(mCharSequenceConnectionType[i].equals(mBtnConnection.getText())); i++)
+        for (int i = 0; !(mCharSequenceConnectionType[i].equals(mBtnConnection.getText().toString())); i++)
             position = i + 1;
 
         dialog.setSingleChoiceItems(mCharSequenceConnectionType, position, new DialogInterface.OnClickListener() {
@@ -152,79 +192,88 @@ public class MainActivity extends AppCompatActivity {
         }).create().show();
     }
 
-    private String result(String size, String speed, int margin) {
-        /*
-         *         Bytes -> Gbytes
-         * Tbytes  1 * 1024 * 1024 * 1024 * 1024
-         * Gbytes  1 * 1024 * 1024 * 1024
-         * Mbytes  1 * 1024 * 1024
-         * Kbytes  1 * 1024
-         * Bytes   1
-         *
-         *         Gbytes -> bytes
-         * Gbytes  1
-         * Mbytes  1 / 1024
-         * Kbytes  1 / 1024 / 1024
-         * Bytes   1 / 1024 / 1024 / 1024
-         */
+    private String calculateTimeToDownload(String size, String speed, int margin) {
 
-        double fileSize = 0;
-        double connectionSpeed = 0;
+        double fileSize = 0, connectionSpeed = 0;
+
         try {
             fileSize = Double.parseDouble(size);
             connectionSpeed = Double.parseDouble(speed);
-        } catch (NumberFormatException ignored) {
-        }
-        double fileSizeKbytes = 0;
-        double connectionSpeedKbytes = 0;
-        double timeInSeconds;
-        double milliseconds;
-
-        CharSequence fileText = mBtnFile.getText();
-        if (mCharSequenceFileType[0].equals(fileText)) {
-            fileSizeKbytes = fileSize;
-        } else if (mCharSequenceFileType[1].equals(fileText)) {
-            fileSizeKbytes = fileSize * 1024;
-        } else if (mCharSequenceFileType[2].equals(fileText)) {
-            fileSizeKbytes = fileSize * 1024 * 1024;
-        } else if (mCharSequenceFileType[3].equals(fileText)) {
-            fileSizeKbytes = fileSize * 1024 * 1024 * 1024;
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         }
 
-        CharSequence connectionText = mBtnConnection.getText();
-        if (mCharSequenceConnectionType[0].equals(connectionText)) {
-            connectionSpeedKbytes = connectionSpeed / 8;
-        } else if (mCharSequenceConnectionType[1].equals(connectionText)) {
-            connectionSpeedKbytes = connectionSpeed * 125;
-        } else if (mCharSequenceConnectionType[2].equals(connectionText)) {
-            connectionSpeedKbytes = connectionSpeed * 125 * 1000;
-        }
+        double fileSize_bit = 0, connectionSpeed_bit = 0, timeInSeconds;
 
-        timeInSeconds = fileSizeKbytes / (connectionSpeedKbytes * (1 - ((double) margin / 100)));
-        milliseconds = timeInSeconds * 1000;
-        return getTime(milliseconds);
+        String fileText = mBtnFile.getText().toString();
+
+        if (mCharSequenceFileType[0].equals(fileText))
+            fileSize_bit = fileSize * SIZE_BIT;
+        else if (mCharSequenceFileType[1].equals(fileText))
+            fileSize_bit = fileSize * SIZE_BYTE;
+        else if (mCharSequenceFileType[2].equals(fileText))
+            fileSize_bit = fileSize * SIZE_KB;
+        else if (mCharSequenceFileType[3].equals(fileText))
+            fileSize_bit = fileSize * SIZE_MB;
+        else if (mCharSequenceFileType[4].equals(fileText))
+            fileSize_bit = fileSize * SIZE_GB;
+        else if (mCharSequenceFileType[5].equals(fileText))
+            fileSize_bit = fileSize * SIZE_TB;
+        else if (mCharSequenceFileType[6].equals(fileText))
+            fileSize_bit = fileSize * SIZE_Kb;
+        else if (mCharSequenceFileType[7].equals(fileText))
+            fileSize_bit = fileSize * SIZE_Mb;
+        else if (mCharSequenceFileType[8].equals(fileText))
+            fileSize_bit = fileSize * SIZE_Gb;
+        else if (mCharSequenceFileType[9].equals(fileText))
+            fileSize_bit = fileSize * SIZE_Tb;
+        else if (mCharSequenceFileType[10].equals(fileText))
+            fileSize_bit = fileSize * SIZE_KiB;
+        else if (mCharSequenceFileType[11].equals(fileText))
+            fileSize_bit = fileSize * SIZE_MiB;
+        else if (mCharSequenceFileType[12].equals(fileText))
+            fileSize_bit = fileSize * SIZE_GiB;
+        else if (mCharSequenceFileType[13].equals(fileText))
+            fileSize_bit = fileSize * SIZE_TiB;
+
+        String connectionText = mBtnConnection.getText().toString();
+
+        if (mCharSequenceConnectionType[0].equals(connectionText))
+            connectionSpeed_bit = connectionSpeed * VEL_bit_S;
+        else if (mCharSequenceConnectionType[2].equals(connectionText))
+            connectionSpeed_bit = connectionSpeed * VEL_byte_S;
+        else if (mCharSequenceConnectionType[3].equals(connectionText))
+            connectionSpeed_bit = connectionSpeed * VEL_Kb_S;
+        else if (mCharSequenceConnectionType[4].equals(connectionText))
+            connectionSpeed_bit = connectionSpeed * VEL_KB_S;
+        else if (mCharSequenceConnectionType[5].equals(connectionText))
+            connectionSpeed_bit = connectionSpeed * VEL_Mb_S;
+        else if (mCharSequenceConnectionType[6].equals(connectionText))
+            connectionSpeed_bit = connectionSpeed * VEL_MB_S;
+        else if (mCharSequenceConnectionType[7].equals(connectionText))
+            connectionSpeed_bit = connectionSpeed * VEL_Gb_S;
+        else if (mCharSequenceConnectionType[8].equals(connectionText))
+            connectionSpeed_bit = connectionSpeed * VEL_GB_S;
+
+        timeInSeconds = fileSize_bit / (connectionSpeed_bit * (1 - ((double) margin / 100)));
+        return timeToSting(timeInSeconds);
     }
 
-    private String getTime(Double milliseconds) {
-        /*
-         * seconds 1000        = ms * 1000
-         * minutes 60000       = ms * 1000 * 60
-         * hours   3600000‬     = ms * 1000 * 60 * 60
-         * days    86400000‬    = ms * 1000 * 60 * 60 * 24
-         */
+    private String timeToSting(Double timeInSeconds) {
 
-        double seconds = (milliseconds / 1000);
-        double minutes = (milliseconds / 60000);
-        double hours = (milliseconds / 3600000);
-        double days = (milliseconds / 86400000);
+        double minutes = (timeInSeconds / TIME_MINUTE);
+        double hours = (timeInSeconds / TIME_HOUR);
+        double days = (timeInSeconds / TIME_DAY);
 
         String day = getString(R.string.day);
         String hour = getString(R.string.hour);
         String minute = getString(R.string.minute);
         String second = getString(R.string.second);
 
-        if (milliseconds > YEAR_MILLIS) {
+        if (timeInSeconds > TIME_YEAR) {
             return getString(R.string.highTime);
+        } else if (timeInSeconds < 1) {
+            return getString(R.string.lowTime);
         } else if (days >= 1) {
             return (int) Math.floor(days) + "" + day + " " +
                     (int) Math.floor(days * 24 % 24) + "" + hour + " " +
@@ -237,10 +286,9 @@ public class MainActivity extends AppCompatActivity {
         } else if (minutes >= 1) {
             return (int) Math.floor(minutes) + "" + minute + " " +
                     (int) Math.floor(minutes * 60 % 60) + "" + second;
-        } else if (seconds >= 1) {
-            return (int) Math.floor(seconds) + "" + second;
-        } else {
-            return getString(R.string.lowTime);
-        }
+        } else if (timeInSeconds >= TIME_S) {
+            return (int) Math.floor(TIME_S) + "" + second;
+        } else return getString(R.string.noTime);
+
     }
 }

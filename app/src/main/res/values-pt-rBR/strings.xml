@@ -16,6 +16,6 @@
 
     <string name="fileSize">Tamanho do Arquivo</string>
     <string name="connectionSpeed">Velocidade de Conexão</string>
-    <string name="errorMargin">Margem de erro - %1$d&#37;</string>
+    <string name="errorMargin">Margem de erro - %1$d%%</string>
 
 </resources>
