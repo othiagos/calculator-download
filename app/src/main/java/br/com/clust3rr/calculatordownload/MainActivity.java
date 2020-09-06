@@ -1,8 +1,5 @@
 package br.com.clust3rr.calculatordownload;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
@@ -13,13 +10,18 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
 public class MainActivity extends AppCompatActivity {
 
     private CharSequence[] mCharSequenceFileType, mCharSequenceConnectionType;
     private EditText mFileSize, mConnectionSpeed;
     private Button mBtnFile, mBtnConnection;
     private TextView mResult, mTax;
-    private SeekBar mSeekBar;
+    private static final int DEFAULT_MARGIN = 5;
+    private static final double YEAR_MILLIS = 31536000000d;
+    private SeekBar mMarginRate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,10 +32,14 @@ public class MainActivity extends AppCompatActivity {
         mConnectionSpeed = findViewById(R.id.textInputEditConnectionSpeed);
         mBtnFile = findViewById(R.id.buttonFile);
         mBtnConnection = findViewById(R.id.buttonConection);
-        mSeekBar = findViewById(R.id.seekBar);
+        mMarginRate = findViewById(R.id.seekBar);
         mResult = findViewById(R.id.result);
-        mTax = findViewById(R.id.tax);
+        mTax = findViewById(R.id.error_margin);
 
+        mMarginRate.setProgress(DEFAULT_MARGIN);
+        mTax.setText(getString(R.string.errorMargin, DEFAULT_MARGIN));
+
+        //
         mCharSequenceFileType = new CharSequence[]{
                 getString(R.string.kilobyte),
                 getString(R.string.megabyte),
@@ -58,9 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                String fs = mFileSize.getText().toString();
-                String cs = mConnectionSpeed.getText().toString();
-                checkFields(fs, cs);
+                updateResult();
             }
         });
 
@@ -75,20 +79,14 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                String fs = mFileSize.getText().toString();
-                String cs = mConnectionSpeed.getText().toString();
-                checkFields(fs, cs);
+                updateResult();
             }
         });
 
-        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        mMarginRate.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                String tax = " " + progress + "%";
-                mTax.setText(tax);
-                String fs = mFileSize.getText().toString();
-                String cs = mConnectionSpeed.getText().toString();
-                checkFields(fs, cs);
+                mTax.setText(getString(R.string.errorMargin, progress));
             }
 
             @Override
@@ -97,20 +95,27 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                updateResult();
             }
         });
+
+        updateResult();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        String text = " " + mSeekBar.getProgress() + "%";
-        mTax.setText(text);
-    }
+    private void updateResult() {
+        if (mFileSize != null && mConnectionSpeed != null && mResult != null) {
+            String fs = mFileSize.getText().toString();
+            String cs = mConnectionSpeed.getText().toString();
+            int mr = mMarginRate.getProgress();
 
-    private void checkFields(String fs, String cs) {
-        if (fs.equals("") || cs.equals("")) mResult.setText("");
-        else result(fs, cs);
+            if (fs.equals("") || cs.equals("")) {
+                mResult.setText(getString(R.string.noTime));
+            } else {
+                mResult.setText(result(fs, cs, mr));
+            }
+
+        }
+
     }
 
     public void buttonFileOnClick(View v) {
@@ -124,9 +129,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 mBtnFile.setText(mCharSequenceFileType[which]);
-                String fs = mFileSize.getText().toString();
-                String cs = mConnectionSpeed.getText().toString();
-                checkFields(fs, cs);
+                updateResult();
                 dialog.cancel();
             }
         }).create().show();
@@ -143,15 +146,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 mBtnConnection.setText(mCharSequenceConnectionType[which]);
-                String fs = mFileSize.getText().toString();
-                String cs = mConnectionSpeed.getText().toString();
-                checkFields(fs, cs);
+                updateResult();
                 dialog.cancel();
             }
         }).create().show();
     }
 
-    private void result(String size, String speed) {
+    private String result(String size, String speed, int margin) {
         /*
          *         Bytes -> Gbytes
          * Tbytes  1 * 1024 * 1024 * 1024 * 1024
@@ -178,7 +179,6 @@ public class MainActivity extends AppCompatActivity {
         double connectionSpeedKbytes = 0;
         double timeInSeconds;
         double milliseconds;
-        double tax = (double) mSeekBar.getProgress() / 100;
 
         CharSequence fileText = mBtnFile.getText();
         if (mCharSequenceFileType[0].equals(fileText)) {
@@ -200,9 +200,9 @@ public class MainActivity extends AppCompatActivity {
             connectionSpeedKbytes = connectionSpeed * 125 * 1000;
         }
 
-        timeInSeconds = fileSizeKbytes / (connectionSpeedKbytes * (1 - tax));
+        timeInSeconds = fileSizeKbytes / (connectionSpeedKbytes * (1 - ((double) margin / 100)));
         milliseconds = timeInSeconds * 1000;
-        mResult.setText(getTime(milliseconds));
+        return getTime(milliseconds);
     }
 
     private String getTime(Double milliseconds) {
@@ -223,8 +223,8 @@ public class MainActivity extends AppCompatActivity {
         String minute = getString(R.string.minute);
         String second = getString(R.string.second);
 
-        if (milliseconds.isInfinite()) {
-            return getString(R.string.infinity);
+        if (milliseconds > YEAR_MILLIS) {
+            return getString(R.string.highTime);
         } else if (days >= 1) {
             return (int) Math.floor(days) + "" + day + " " +
                     (int) Math.floor(days * 24 % 24) + "" + hour + " " +
