@@ -71,7 +71,7 @@
         android:layout_marginBottom="8dp"
         android:background="@drawable/button_style"
         android:onClick="buttonFileOnClick"
-        android:text="@string/size_bytes"
+        android:text="@string/size_bits"
         android:textAllCaps="false"
         app:layout_constraintBottom_toBottomOf="@+id/textInputFileSize"
         app:layout_constraintEnd_toEndOf="parent"

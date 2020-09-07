@@ -15,14 +15,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final double SIZE_BIT = 1;
     private EditText mFileSize, mConnectionSpeed;
     private Button mBtnFile, mBtnConnection;
     private TextView mResult, mTax;
     private static final int DEFAULT_MARGIN = 5;
     private SeekBar mMarginRate;
+    private static final double SIZE_BIT = 1;
     private static final double SIZE_BYTE = SIZE_BIT * 8;
-    private static final double SIZE_KB = 1000d * SIZE_BYTE;
+    private static final double SIZE_KB = 1000 * SIZE_BYTE;
     private static final double SIZE_MB = 1000 * SIZE_KB;
     private static final double SIZE_GB = 1000 * SIZE_MB;
     private static final double SIZE_TB = 1000 * SIZE_GB;
@@ -36,12 +36,14 @@ public class MainActivity extends AppCompatActivity {
     private static final double SIZE_TiB = 1024 * SIZE_GiB;
     private static final double VEL_bit_S = SIZE_BIT;
     private static final double VEL_byte_S = SIZE_BYTE;
+
     private static final double VEL_Kb_S = SIZE_Kb;
     private static final double VEL_KB_S = SIZE_KB;
     private static final double VEL_Mb_S = SIZE_Mb;
     private static final double VEL_MB_S = SIZE_MB;
     private static final double VEL_Gb_S = SIZE_Gb;
     private static final double VEL_GB_S = SIZE_GB;
+
     private static final double TIME_S = 1;
     private static final double TIME_MINUTE = TIME_S * 60;
     private static final double TIME_HOUR = TIME_MINUTE * 60;
@@ -165,13 +167,10 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; !(mCharSequenceFileType[i].equals(mBtnFile.getText().toString())); i++)
             position = i + 1;
 
-        dialog.setSingleChoiceItems(mCharSequenceFileType, position, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                mBtnFile.setText(mCharSequenceFileType[which]);
-                updateResult();
-                dialog.cancel();
-            }
+        dialog.setSingleChoiceItems(mCharSequenceFileType, position, (DialogInterface mDialog, int which) -> {
+            mBtnFile.setText(mCharSequenceFileType[which]);
+            updateResult();
+            mDialog.cancel();
         }).create().show();
     }
 
@@ -182,13 +181,10 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; !(mCharSequenceConnectionType[i].equals(mBtnConnection.getText().toString())); i++)
             position = i + 1;
 
-        dialog.setSingleChoiceItems(mCharSequenceConnectionType, position, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                mBtnConnection.setText(mCharSequenceConnectionType[which]);
-                updateResult();
-                dialog.cancel();
-            }
+        dialog.setSingleChoiceItems(mCharSequenceConnectionType, position, (DialogInterface mDialog, int which) -> {
+            mBtnConnection.setText(mCharSequenceConnectionType[which]);
+            updateResult();
+            mDialog.cancel();
         }).create().show();
     }
 
@@ -240,19 +236,19 @@ public class MainActivity extends AppCompatActivity {
 
         if (mCharSequenceConnectionType[0].equals(connectionText))
             connectionSpeed_bit = connectionSpeed * VEL_bit_S;
-        else if (mCharSequenceConnectionType[2].equals(connectionText))
+        else if (mCharSequenceConnectionType[1].equals(connectionText))
             connectionSpeed_bit = connectionSpeed * VEL_byte_S;
-        else if (mCharSequenceConnectionType[3].equals(connectionText))
+        else if (mCharSequenceConnectionType[2].equals(connectionText))
             connectionSpeed_bit = connectionSpeed * VEL_Kb_S;
-        else if (mCharSequenceConnectionType[4].equals(connectionText))
+        else if (mCharSequenceConnectionType[3].equals(connectionText))
             connectionSpeed_bit = connectionSpeed * VEL_KB_S;
-        else if (mCharSequenceConnectionType[5].equals(connectionText))
+        else if (mCharSequenceConnectionType[4].equals(connectionText))
             connectionSpeed_bit = connectionSpeed * VEL_Mb_S;
-        else if (mCharSequenceConnectionType[6].equals(connectionText))
+        else if (mCharSequenceConnectionType[5].equals(connectionText))
             connectionSpeed_bit = connectionSpeed * VEL_MB_S;
-        else if (mCharSequenceConnectionType[7].equals(connectionText))
+        else if (mCharSequenceConnectionType[6].equals(connectionText))
             connectionSpeed_bit = connectionSpeed * VEL_Gb_S;
-        else if (mCharSequenceConnectionType[8].equals(connectionText))
+        else if (mCharSequenceConnectionType[7].equals(connectionText))
             connectionSpeed_bit = connectionSpeed * VEL_GB_S;
 
         timeInSeconds = fileSize_bit / (connectionSpeed_bit * (1 - ((double) margin / 100)));
@@ -287,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
             return (int) Math.floor(minutes) + "" + minute + " " +
                     (int) Math.floor(minutes * 60 % 60) + "" + second;
         } else if (timeInSeconds >= TIME_S) {
-            return (int) Math.floor(TIME_S) + "" + second;
+            return (int) Math.floor(timeInSeconds) + "" + second;
         } else return getString(R.string.noTime);
 
     }

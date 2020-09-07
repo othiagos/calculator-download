@@ -13,8 +13,8 @@
     <string name="highTime">More than a year</string>
     <string name="noTime">Fill in the fields first!</string>
 
-    <string name="size_bits" translatable="false">Bits (b)</string>
-    <string name="size_bytes" translatable="false">Bytes (B)</string>
+    <string name="size_bits" translatable="false">Bit (b)</string>
+    <string name="size_bytes" translatable="false">Byte (B)</string>
     <string name="size_KB" translatable="false">KByte (KB)</string>
     <string name="size_MB" translatable="false">MByte (MB)</string>
     <string name="size_GB" translatable="false">GByte (GB)</string>
