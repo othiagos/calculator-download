@@ -4,9 +4,7 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.View
 import android.widget.SeekBar
-import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import br.com.clust3rr.calculatordownload.databinding.ActivityMainBinding
@@ -20,7 +18,7 @@ class MainActivity : AppCompatActivity(), TextWatcher {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(binding.root)
 
         binding.marginErrorSlider.progress = DEFAULT_MARGIN
         binding.errorMarginDisplay.text = getString(R.string.errorMargin, DEFAULT_MARGIN)
@@ -53,35 +51,34 @@ class MainActivity : AppCompatActivity(), TextWatcher {
             getString(R.string.vel_GB_s)
         )
 
-        binding.textInputFileSize.addTextChangedListener(this)
-        binding.textInputConnectionSpeed.addTextChangedListener(this)
-        binding.marginErrorSlider.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+        binding.inputFileSize.addTextChangedListener(this)
+        binding.inputConnectionSpeed.addTextChangedListener(this)
+        binding.marginErrorSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 binding.errorMarginDisplay. text = getString(R.string.errorMargin, progress)
             }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
 
-            override fun onStartTrackingTouch(seekBar: SeekBar) {}
-
-            override fun onStopTrackingTouch(seekBar: SeekBar) {
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
                 updateResult()
             }
         })
 
         binding.buttonFileSizeList.setOnClickListener { buttonFileOnClick() }
-        binding.buttonSpeedList.setOnClickListener { buttonConnectionOnClick() }
+        binding.buttonConnectionSpeedList.setOnClickListener { buttonConnectionOnClick() }
 
         updateResult()
     }
 
     private fun updateResult() {
-        val fs = binding.textInputFileSize.text.toString()
-        val cs =  binding.textInputConnectionSpeed.text.toString()
+        val fs = binding.inputFileSize.text.toString()
+        val cs = binding.inputConnectionSpeed.text.toString()
         val mr = binding.marginErrorSlider.progress
 
         binding.timeResult.text = if(fs.isBlank() || cs.isBlank())
             getString(R.string.noTime)
         else
-            calculateTimeToDownload(fs, cs, mr)
+            calculateTimeToDownload(fs, cs, mr) ?: "Error"
     }
 
     private fun buttonFileOnClick() {
@@ -109,7 +106,7 @@ class MainActivity : AppCompatActivity(), TextWatcher {
         dialog.setTitle(R.string.connectionSpeed)
         var position = 0
         var i = 0
-        while (mCharSequenceConnectionType[i] != binding.buttonSpeedList.text.toString()) {
+        while (mCharSequenceConnectionType[i] != binding.buttonConnectionSpeedList.text.toString()) {
             position = i + 1
             i++
         }
@@ -118,55 +115,54 @@ class MainActivity : AppCompatActivity(), TextWatcher {
             mCharSequenceConnectionType,
             position
         ) { mDialog: DialogInterface, which: Int ->
-            binding.buttonSpeedList.text = mCharSequenceConnectionType[which]
+            binding.buttonConnectionSpeedList.text = mCharSequenceConnectionType[which]
             updateResult()
             mDialog.cancel()
         }.create().show()
     }
 
-    private fun calculateTimeToDownload(size: String, speed: String, margin: Int): String {
-        var fileSize = 0.0
-        var connectionSpeed = 0.0
+    private fun calculateTimeToDownload(size: String, speed: String, margin: Int): String? {
+        var fileSize: Double = 0.0
+        var connectionSpeed: Double = 0.0
 
         try {
             fileSize = size.toDouble()
             connectionSpeed = speed.toDouble()
         } catch (e: NumberFormatException) {
             e.printStackTrace()
+            return null
         }
 
-        var fileSizeBits = 0.0
-        var connectionSpeedBits = 0.0
-
-        when(binding.buttonFileSizeList.text.toString()){
-            mCharSequenceFileType[0] -> fileSizeBits = fileSize * SIZE_BIT
-            mCharSequenceFileType[1] -> fileSizeBits = fileSize * SIZE_BYTE
-            mCharSequenceFileType[2] -> fileSizeBits = fileSize * SIZE_KB
-            mCharSequenceFileType[3] -> fileSizeBits = fileSize * SIZE_MB
-            mCharSequenceFileType[4] -> fileSizeBits = fileSize * SIZE_GB
-            mCharSequenceFileType[5] -> fileSizeBits = fileSize * SIZE_TB
-            mCharSequenceFileType[6] -> fileSizeBits = fileSize * SIZE_Kb
-            mCharSequenceFileType[7] -> fileSizeBits = fileSize * SIZE_Mb
-            mCharSequenceFileType[8] -> fileSizeBits = fileSize * SIZE_Gb
-            mCharSequenceFileType[9] -> fileSizeBits = fileSize * SIZE_Tb
-            mCharSequenceFileType[10] -> fileSizeBits = fileSize * SIZE_KiB
-            mCharSequenceFileType[11] -> fileSizeBits = fileSize * SIZE_MiB
-            mCharSequenceFileType[12] -> fileSizeBits = fileSize * SIZE_GiB
-            mCharSequenceFileType[13] -> fileSizeBits = fileSize * SIZE_TiB
+        val fileSizeBits: Double = when(binding.buttonFileSizeList.text.toString()){
+            mCharSequenceFileType[0] -> fileSize * SIZE_BIT
+            mCharSequenceFileType[1] -> fileSize * SIZE_BYTE
+            mCharSequenceFileType[2] -> fileSize * SIZE_KB
+            mCharSequenceFileType[3] -> fileSize * SIZE_MB
+            mCharSequenceFileType[4] -> fileSize * SIZE_GB
+            mCharSequenceFileType[5] -> fileSize * SIZE_TB
+            mCharSequenceFileType[6] -> fileSize * SIZE_Kb
+            mCharSequenceFileType[7] -> fileSize * SIZE_Mb
+            mCharSequenceFileType[8] -> fileSize * SIZE_Gb
+            mCharSequenceFileType[9] -> fileSize * SIZE_Tb
+            mCharSequenceFileType[10] -> fileSize * SIZE_KiB
+            mCharSequenceFileType[11] -> fileSize * SIZE_MiB
+            mCharSequenceFileType[12] -> fileSize * SIZE_GiB
+            mCharSequenceFileType[13] -> fileSize * SIZE_TiB
+            else -> { 0.0 }
+        }
+        val connectionSpeedBits: Double = when(binding.buttonConnectionSpeedList.text.toString()){
+            mCharSequenceConnectionType[0] -> connectionSpeed * VEL_bit_S
+            mCharSequenceConnectionType[1] -> connectionSpeed * VEL_byte_S
+            mCharSequenceConnectionType[2] -> connectionSpeed * VEL_Kb_S
+            mCharSequenceConnectionType[3] -> connectionSpeed * VEL_KB_S
+            mCharSequenceConnectionType[4] -> connectionSpeed * VEL_Mb_S
+            mCharSequenceConnectionType[5] -> connectionSpeed * VEL_MB_S
+            mCharSequenceConnectionType[6] -> connectionSpeed * VEL_Gb_S
+            mCharSequenceConnectionType[7] -> connectionSpeed * VEL_GB_S
+            else -> { 0.0 }
         }
 
-        when(binding.buttonSpeedList.text.toString()){
-            mCharSequenceConnectionType[0] -> connectionSpeedBits = connectionSpeed * VEL_bit_S
-            mCharSequenceConnectionType[1] -> connectionSpeedBits = connectionSpeed * VEL_byte_S
-            mCharSequenceConnectionType[2] -> connectionSpeedBits = connectionSpeed * VEL_Kb_S
-            mCharSequenceConnectionType[3] -> connectionSpeedBits = connectionSpeed * VEL_KB_S
-            mCharSequenceConnectionType[4] -> connectionSpeedBits = connectionSpeed * VEL_Mb_S
-            mCharSequenceConnectionType[5] -> connectionSpeedBits = connectionSpeed * VEL_MB_S
-            mCharSequenceConnectionType[6] -> connectionSpeedBits = connectionSpeed * VEL_Gb_S
-            mCharSequenceConnectionType[7] -> connectionSpeedBits = connectionSpeed * VEL_GB_S
-        }
-
-        val timeInSeconds = fileSizeBits / (connectionSpeedBits * (1 - (margin.toDouble() / 100)))
+        val timeInSeconds: Double = fileSizeBits / (connectionSpeedBits * (1 - (margin.toDouble() / 100)))
         return timeToSting(timeInSeconds)
     }
 
