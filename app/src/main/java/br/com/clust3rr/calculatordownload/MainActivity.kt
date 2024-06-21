@@ -1,290 +1,278 @@
-package br.com.clust3rr.calculatordownload;
+package br.com.clust3rr.calculatordownload
 
-import android.content.DialogInterface;
-import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.SeekBar;
-import android.widget.TextView;
+import android.content.DialogInterface
+import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.widget.Button
+import android.widget.EditText
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import kotlin.math.floor
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
+class MainActivity : AppCompatActivity() {
+    private var mFileSize: EditText? = null
+    private var mConnectionSpeed: EditText? = null
+    private var mBtnFile: Button? = null
+    private var mBtnConnection: Button? = null
+    private var mResult: TextView? = null
+    private var mTax: TextView? = null
+    private var mMarginRate: SeekBar? = null
+    private lateinit var mCharSequenceFileType: Array<String>
+    private lateinit var mCharSequenceConnectionType: Array<String>
 
-public class MainActivity extends AppCompatActivity {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-    private EditText mFileSize, mConnectionSpeed;
-    private Button mBtnFile, mBtnConnection;
-    private TextView mResult, mTax;
-    private static final int DEFAULT_MARGIN = 5;
-    private SeekBar mMarginRate;
-    private static final double SIZE_BIT = 1;
-    private static final double SIZE_BYTE = SIZE_BIT * 8;
-    private static final double SIZE_KB = 1000 * SIZE_BYTE;
-    private static final double SIZE_MB = 1000 * SIZE_KB;
-    private static final double SIZE_GB = 1000 * SIZE_MB;
-    private static final double SIZE_TB = 1000 * SIZE_GB;
-    private static final double SIZE_Kb = 1000 * SIZE_BIT;
-    private static final double SIZE_Mb = 1000 * SIZE_Kb;
-    private static final double SIZE_Gb = 1000 * SIZE_Mb;
-    private static final double SIZE_Tb = 1000 * SIZE_Gb;
-    private static final double SIZE_KiB = 1024 * SIZE_BIT;
-    private static final double SIZE_MiB = 1024 * SIZE_KiB;
-    private static final double SIZE_GiB = 1024 * SIZE_MiB;
-    private static final double SIZE_TiB = 1024 * SIZE_GiB;
-    private static final double VEL_bit_S = SIZE_BIT;
-    private static final double VEL_byte_S = SIZE_BYTE;
+        mFileSize = findViewById(R.id.textInputEditFileSize)
+        mConnectionSpeed = findViewById(R.id.textInputEditConnectionSpeed)
+        mBtnFile = findViewById(R.id.buttonFile)
+        mBtnConnection = findViewById(R.id.buttonConection)
+        mMarginRate = findViewById(R.id.seekBar)
+        mResult = findViewById(R.id.result)
+        mTax = findViewById(R.id.error_margin)
 
-    private static final double VEL_Kb_S = SIZE_Kb;
-    private static final double VEL_KB_S = SIZE_KB;
-    private static final double VEL_Mb_S = SIZE_Mb;
-    private static final double VEL_MB_S = SIZE_MB;
-    private static final double VEL_Gb_S = SIZE_Gb;
-    private static final double VEL_GB_S = SIZE_GB;
-
-    private static final double TIME_S = 1;
-    private static final double TIME_MINUTE = TIME_S * 60;
-    private static final double TIME_HOUR = TIME_MINUTE * 60;
-    private static final double TIME_DAY = TIME_HOUR * 24;
-    private static final double TIME_YEAR = TIME_DAY * 365;
-    private String[] mCharSequenceFileType, mCharSequenceConnectionType;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        mFileSize = findViewById(R.id.textInputEditFileSize);
-        mConnectionSpeed = findViewById(R.id.textInputEditConnectionSpeed);
-        mBtnFile = findViewById(R.id.buttonFile);
-        mBtnConnection = findViewById(R.id.buttonConection);
-        mMarginRate = findViewById(R.id.seekBar);
-        mResult = findViewById(R.id.result);
-        mTax = findViewById(R.id.error_margin);
-
-        mMarginRate.setProgress(DEFAULT_MARGIN);
-        mTax.setText(getString(R.string.errorMargin, DEFAULT_MARGIN));
+        mMarginRate!!.progress = DEFAULT_MARGIN
+        mTax!!.text = getString(R.string.errorMargin, DEFAULT_MARGIN)
 
         //
-        mCharSequenceFileType = new String[]{
-                getString(R.string.size_bits),
-                getString(R.string.size_bytes),
-                getString(R.string.size_KB),
-                getString(R.string.size_MB),
-                getString(R.string.size_GB),
-                getString(R.string.size_TB),
-                getString(R.string.size_Kb),
-                getString(R.string.size_Mb),
-                getString(R.string.size_Gb),
-                getString(R.string.size_Tb),
-                getString(R.string.size_KiB),
-                getString(R.string.size_MiB),
-                getString(R.string.size_GiB),
-                getString(R.string.size_TiB)
-        };
+        mCharSequenceFileType = arrayOf(
+            getString(R.string.size_bits),
+            getString(R.string.size_bytes),
+            getString(R.string.size_KB),
+            getString(R.string.size_MB),
+            getString(R.string.size_GB),
+            getString(R.string.size_TB),
+            getString(R.string.size_Kb),
+            getString(R.string.size_Mb),
+            getString(R.string.size_Gb),
+            getString(R.string.size_Tb),
+            getString(R.string.size_KiB),
+            getString(R.string.size_MiB),
+            getString(R.string.size_GiB),
+            getString(R.string.size_TiB)
+        )
 
-        mCharSequenceConnectionType = new String[]{
-                getString(R.string.vel_bit_s),
-                getString(R.string.vel_byte_s),
-                getString(R.string.vel_Kb_s),
-                getString(R.string.vel_KB_s),
-                getString(R.string.vel_Mb_s),
-                getString(R.string.vel_MB_s),
-                getString(R.string.vel_Gb_s),
-                getString(R.string.vel_GB_s)
-        };
+        mCharSequenceConnectionType = arrayOf(
+            getString(R.string.vel_bit_s),
+            getString(R.string.vel_byte_s),
+            getString(R.string.vel_Kb_s),
+            getString(R.string.vel_KB_s),
+            getString(R.string.vel_Mb_s),
+            getString(R.string.vel_MB_s),
+            getString(R.string.vel_Gb_s),
+            getString(R.string.vel_GB_s)
+        )
 
-        mFileSize.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        mFileSize!!.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
             }
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
             }
 
-            @Override
-            public void afterTextChanged(Editable s) {
-                updateResult();
+            override fun afterTextChanged(s: Editable) {
+                updateResult()
             }
-        });
+        })
 
-        mConnectionSpeed.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        mConnectionSpeed!!.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
             }
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
             }
 
-            @Override
-            public void afterTextChanged(Editable s) {
-                updateResult();
+            override fun afterTextChanged(s: Editable) {
+                updateResult()
             }
-        });
+        })
 
-        mMarginRate.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mTax.setText(getString(R.string.errorMargin, progress));
+        mMarginRate!!.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                mTax!!.text = getString(R.string.errorMargin, progress)
             }
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
             }
 
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                updateResult();
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                updateResult()
             }
-        });
+        })
 
-        updateResult();
+        updateResult()
     }
 
-    private void updateResult() {
+    private fun updateResult() {
         if (mFileSize != null && mConnectionSpeed != null && mResult != null) {
-            String fs = mFileSize.getText().toString();
-            String cs = mConnectionSpeed.getText().toString();
-            int mr = mMarginRate.getProgress();
+            val fs = mFileSize!!.text.toString()
+            val cs = mConnectionSpeed!!.text.toString()
+            val mr = mMarginRate!!.progress
 
-            if (fs.equals("") || cs.equals(""))
-                mResult.setText(getString(R.string.noTime));
-            else
-                mResult.setText(calculateTimeToDownload(fs, cs, mr));
+            if (fs == "" || cs == "") mResult!!.text = getString(R.string.noTime)
+            else mResult!!.text = calculateTimeToDownload(fs, cs, mr)
+        }
+    }
 
+    fun buttonFileOnClick() {
+        val dialog = AlertDialog.Builder(this)
+        dialog.setTitle(R.string.fileSize)
+        var position = 0
+        var i = 0
+        while (mCharSequenceFileType[i] != mBtnFile!!.text.toString()) {
+            position = i + 1
+            i++
         }
 
+        dialog.setSingleChoiceItems(
+            mCharSequenceFileType,
+            position
+        ) { mDialog: DialogInterface, which: Int ->
+            mBtnFile!!.text = mCharSequenceFileType[which]
+            updateResult()
+            mDialog.cancel()
+        }.create().show()
     }
 
-    public void buttonFileOnClick(View v) {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle(R.string.fileSize);
-        int position = 0;
-        for (int i = 0; !(mCharSequenceFileType[i].equals(mBtnFile.getText().toString())); i++)
-            position = i + 1;
+    fun buttonConnectionOnClick() {
+        val dialog = AlertDialog.Builder(this)
+        dialog.setTitle(R.string.connectionSpeed)
+        var position = 0
+        var i = 0
+        while (mCharSequenceConnectionType[i] != mBtnConnection!!.text.toString()) {
+            position = i + 1
+            i++
+        }
 
-        dialog.setSingleChoiceItems(mCharSequenceFileType, position, (DialogInterface mDialog, int which) -> {
-            mBtnFile.setText(mCharSequenceFileType[which]);
-            updateResult();
-            mDialog.cancel();
-        }).create().show();
+        dialog.setSingleChoiceItems(
+            mCharSequenceConnectionType,
+            position
+        ) { mDialog: DialogInterface, which: Int ->
+            mBtnConnection!!.text = mCharSequenceConnectionType[which]
+            updateResult()
+            mDialog.cancel()
+        }.create().show()
     }
 
-    public void buttonConnectionOnClick(View v) {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle(R.string.connectionSpeed);
-        int position = 0;
-        for (int i = 0; !(mCharSequenceConnectionType[i].equals(mBtnConnection.getText().toString())); i++)
-            position = i + 1;
-
-        dialog.setSingleChoiceItems(mCharSequenceConnectionType, position, (DialogInterface mDialog, int which) -> {
-            mBtnConnection.setText(mCharSequenceConnectionType[which]);
-            updateResult();
-            mDialog.cancel();
-        }).create().show();
-    }
-
-    private String calculateTimeToDownload(String size, String speed, int margin) {
-
-        double fileSize = 0, connectionSpeed = 0;
+    private fun calculateTimeToDownload(size: String, speed: String, margin: Int): String {
+        var fileSize = 0.0
+        var connectionSpeed = 0.0
 
         try {
-            fileSize = Double.parseDouble(size);
-            connectionSpeed = Double.parseDouble(speed);
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
+            fileSize = size.toDouble()
+            connectionSpeed = speed.toDouble()
+        } catch (e: NumberFormatException) {
+            e.printStackTrace()
         }
 
-        double fileSize_bit = 0, connectionSpeed_bit = 0, timeInSeconds;
+        var fileSizeBits = 0.0
+        var connectionSpeedBits = 0.0
 
-        String fileText = mBtnFile.getText().toString();
+        val fileText = mBtnFile!!.text.toString()
 
-        if (mCharSequenceFileType[0].equals(fileText))
-            fileSize_bit = fileSize * SIZE_BIT;
-        else if (mCharSequenceFileType[1].equals(fileText))
-            fileSize_bit = fileSize * SIZE_BYTE;
-        else if (mCharSequenceFileType[2].equals(fileText))
-            fileSize_bit = fileSize * SIZE_KB;
-        else if (mCharSequenceFileType[3].equals(fileText))
-            fileSize_bit = fileSize * SIZE_MB;
-        else if (mCharSequenceFileType[4].equals(fileText))
-            fileSize_bit = fileSize * SIZE_GB;
-        else if (mCharSequenceFileType[5].equals(fileText))
-            fileSize_bit = fileSize * SIZE_TB;
-        else if (mCharSequenceFileType[6].equals(fileText))
-            fileSize_bit = fileSize * SIZE_Kb;
-        else if (mCharSequenceFileType[7].equals(fileText))
-            fileSize_bit = fileSize * SIZE_Mb;
-        else if (mCharSequenceFileType[8].equals(fileText))
-            fileSize_bit = fileSize * SIZE_Gb;
-        else if (mCharSequenceFileType[9].equals(fileText))
-            fileSize_bit = fileSize * SIZE_Tb;
-        else if (mCharSequenceFileType[10].equals(fileText))
-            fileSize_bit = fileSize * SIZE_KiB;
-        else if (mCharSequenceFileType[11].equals(fileText))
-            fileSize_bit = fileSize * SIZE_MiB;
-        else if (mCharSequenceFileType[12].equals(fileText))
-            fileSize_bit = fileSize * SIZE_GiB;
-        else if (mCharSequenceFileType[13].equals(fileText))
-            fileSize_bit = fileSize * SIZE_TiB;
+        when(fileText){
+            mCharSequenceFileType[0] -> fileSizeBits = fileSize * SIZE_BIT
+            mCharSequenceFileType[1] -> fileSizeBits = fileSize * SIZE_BYTE
+            mCharSequenceFileType[2] -> fileSizeBits = fileSize * SIZE_KB
+            mCharSequenceFileType[3] -> fileSizeBits = fileSize * SIZE_MB
+            mCharSequenceFileType[4] -> fileSizeBits = fileSize * SIZE_GB
+            mCharSequenceFileType[5] -> fileSizeBits = fileSize * SIZE_TB
+            mCharSequenceFileType[6] -> fileSizeBits = fileSize * SIZE_Kb
+            mCharSequenceFileType[7] -> fileSizeBits = fileSize * SIZE_Mb
+            mCharSequenceFileType[8] -> fileSizeBits = fileSize * SIZE_Gb
+            mCharSequenceFileType[9] -> fileSizeBits = fileSize * SIZE_Tb
+            mCharSequenceFileType[10] -> fileSizeBits = fileSize * SIZE_KiB
+            mCharSequenceFileType[11] -> fileSizeBits = fileSize * SIZE_MiB
+            mCharSequenceFileType[12] -> fileSizeBits = fileSize * SIZE_GiB
+            mCharSequenceFileType[13] -> fileSizeBits = fileSize * SIZE_TiB
+        }
 
-        String connectionText = mBtnConnection.getText().toString();
+        val connectionText = mBtnConnection!!.text.toString()
 
-        if (mCharSequenceConnectionType[0].equals(connectionText))
-            connectionSpeed_bit = connectionSpeed * VEL_bit_S;
-        else if (mCharSequenceConnectionType[1].equals(connectionText))
-            connectionSpeed_bit = connectionSpeed * VEL_byte_S;
-        else if (mCharSequenceConnectionType[2].equals(connectionText))
-            connectionSpeed_bit = connectionSpeed * VEL_Kb_S;
-        else if (mCharSequenceConnectionType[3].equals(connectionText))
-            connectionSpeed_bit = connectionSpeed * VEL_KB_S;
-        else if (mCharSequenceConnectionType[4].equals(connectionText))
-            connectionSpeed_bit = connectionSpeed * VEL_Mb_S;
-        else if (mCharSequenceConnectionType[5].equals(connectionText))
-            connectionSpeed_bit = connectionSpeed * VEL_MB_S;
-        else if (mCharSequenceConnectionType[6].equals(connectionText))
-            connectionSpeed_bit = connectionSpeed * VEL_Gb_S;
-        else if (mCharSequenceConnectionType[7].equals(connectionText))
-            connectionSpeed_bit = connectionSpeed * VEL_GB_S;
+        when(connectionText){
+            mCharSequenceConnectionType[0] -> connectionSpeedBits = connectionSpeed * VEL_bit_S
+            mCharSequenceConnectionType[1] -> connectionSpeedBits = connectionSpeed * VEL_byte_S
+            mCharSequenceConnectionType[2] -> connectionSpeedBits = connectionSpeed * VEL_Kb_S
+            mCharSequenceConnectionType[3] -> connectionSpeedBits = connectionSpeed * VEL_KB_S
+            mCharSequenceConnectionType[4] -> connectionSpeedBits = connectionSpeed * VEL_Mb_S
+            mCharSequenceConnectionType[5] -> connectionSpeedBits = connectionSpeed * VEL_MB_S
+            mCharSequenceConnectionType[6] -> connectionSpeedBits = connectionSpeed * VEL_Gb_S
+            mCharSequenceConnectionType[7] -> connectionSpeedBits = connectionSpeed * VEL_GB_S
+        }
 
-        timeInSeconds = fileSize_bit / (connectionSpeed_bit * (1 - ((double) margin / 100)));
-        return timeToSting(timeInSeconds);
+        val timeInSeconds = fileSizeBits / (connectionSpeedBits * (1 - (margin.toDouble() / 100)))
+        return timeToSting(timeInSeconds)
     }
 
-    private String timeToSting(Double timeInSeconds) {
+    private fun timeToSting(timeInSeconds: Double): String {
+        val minutes = (timeInSeconds / TIME_MINUTE)
+        val hours = (timeInSeconds / TIME_HOUR)
+        val days = (timeInSeconds / TIME_DAY)
 
-        double minutes = (timeInSeconds / TIME_MINUTE);
-        double hours = (timeInSeconds / TIME_HOUR);
-        double days = (timeInSeconds / TIME_DAY);
+        val day = getString(R.string.day)
+        val hour = getString(R.string.hour)
+        val minute = getString(R.string.minute)
+        val second = getString(R.string.second)
 
-        String day = getString(R.string.day);
-        String hour = getString(R.string.hour);
-        String minute = getString(R.string.minute);
-        String second = getString(R.string.second);
-
-        if (timeInSeconds > TIME_YEAR) {
-            return getString(R.string.highTime);
+        return if (timeInSeconds > TIME_YEAR) {
+            getString(R.string.highTime)
         } else if (timeInSeconds < 1) {
-            return getString(R.string.lowTime);
+            getString(R.string.lowTime)
         } else if (days >= 1) {
-            return (int) Math.floor(days) + "" + day + " " +
-                    (int) Math.floor(days * 24 % 24) + "" + hour + " " +
-                    (int) Math.floor(days * 24 * 60 % 60) + "" + minute + " " +
-                    (int) Math.floor(days * 24 * 60 * 60 % 60) + "" + second;
+            floor(days).toInt()
+                .toString() + "" + day + " " + floor(days * 24 % 24)
+                .toInt() + "" + hour + " " + floor(days * 24 * 60 % 60)
+                .toInt() + "" + minute + " " + floor(days * 24 * 60 * 60 % 60)
+                .toInt() + "" + second
         } else if (hours >= 1) {
-            return (int) Math.floor(hours) + "" + hour + " " +
-                    (int) Math.floor(hours * 60 % 60) + "" + minute + " " +
-                    (int) Math.floor(hours * 60 * 60 % 60) + "" + second;
+            floor(hours).toInt()
+                .toString() + "" + hour + " " + floor(hours * 60 % 60)
+                .toInt() + "" + minute + " " + floor(hours * 60 * 60 % 60)
+                .toInt() + "" + second
         } else if (minutes >= 1) {
-            return (int) Math.floor(minutes) + "" + minute + " " +
-                    (int) Math.floor(minutes * 60 % 60) + "" + second;
+            floor(minutes).toInt().toString() + "" + minute + " " + floor(
+                minutes * 60 % 60
+            ).toInt() + "" + second
         } else if (timeInSeconds >= TIME_S) {
-            return (int) Math.floor(timeInSeconds) + "" + second;
-        } else return getString(R.string.noTime);
+            floor(timeInSeconds).toInt().toString() + "" + second
+        } else getString(R.string.noTime)
+    }
 
+    companion object {
+        private const val DEFAULT_MARGIN = 5
+        private const val SIZE_BIT = 1.0
+        private const val SIZE_BYTE = SIZE_BIT * 8
+        private const val SIZE_KB = 1000 * SIZE_BYTE
+        private const val SIZE_MB = 1000 * SIZE_KB
+        private const val SIZE_GB = 1000 * SIZE_MB
+        private const val SIZE_TB = 1000 * SIZE_GB
+        private const val SIZE_Kb = 1000 * SIZE_BIT
+        private const val SIZE_Mb = 1000 * SIZE_Kb
+        private const val SIZE_Gb = 1000 * SIZE_Mb
+        private const val SIZE_Tb = 1000 * SIZE_Gb
+        private const val SIZE_KiB = 1024 * SIZE_BIT
+        private const val SIZE_MiB = 1024 * SIZE_KiB
+        private const val SIZE_GiB = 1024 * SIZE_MiB
+        private const val SIZE_TiB = 1024 * SIZE_GiB
+        private const val VEL_bit_S = SIZE_BIT
+        private const val VEL_byte_S = SIZE_BYTE
+
+        private const val VEL_Kb_S = SIZE_Kb
+        private const val VEL_KB_S = SIZE_KB
+        private const val VEL_Mb_S = SIZE_Mb
+        private const val VEL_MB_S = SIZE_MB
+        private const val VEL_Gb_S = SIZE_Gb
+        private const val VEL_GB_S = SIZE_GB
+
+        private const val TIME_S = 1.0
+        private const val TIME_MINUTE = TIME_S * 60
+        private const val TIME_HOUR = TIME_MINUTE * 60
+        private const val TIME_DAY = TIME_HOUR * 24
+        private const val TIME_YEAR = TIME_DAY * 365
     }
 }
