@@ -7,7 +7,7 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/result"
+        android:id="@+id/timeResult"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -20,48 +20,49 @@
         app:layout_constraintTop_toBottomOf="@+id/divider2" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputFileSize"
+        android:id="@+id/textInputFileSizeLayout"
         android:layout_width="0dp"
-
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        app:layout_constraintEnd_toStartOf="@+id/buttonFile"
+        app:layout_constraintEnd_toStartOf="@+id/buttonFileSizeList"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/textInputEditFileSize"
+            android:id="@+id/textInputFileSize"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:hint="@string/fileSize"
             android:inputType="number|numberDecimal"
             android:singleLine="true"
             android:textColorHint="#FFFFFF" />
+
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputConnectionSpeed"
+        android:id="@+id/textInputConnectionSpeedLayout"
         android:layout_width="0dp"
         android:layout_height="56dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        app:layout_constraintEnd_toStartOf="@+id/buttonConection"
+        app:layout_constraintEnd_toStartOf="@+id/buttonSpeedList"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputFileSize">
+        app:layout_constraintTop_toBottomOf="@+id/textInputFileSizeLayout">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/textInputEditConnectionSpeed"
+            android:id="@+id/textInputConnectionSpeed"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:hint="@string/connectionSpeed"
             android:inputType="number|numberDecimal" />
+
     </com.google.android.material.textfield.TextInputLayout>
 
     <Button
-        android:id="@+id/buttonFile"
+        android:id="@+id/buttonFileSizeList"
         style="@android:style/Widget.DeviceDefault.Light.Button.Toggle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -70,31 +71,29 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:background="@drawable/button_style"
-        android:onClick="buttonFileOnClick"
         android:text="@string/size_bits"
         android:textAllCaps="false"
-        app:layout_constraintBottom_toBottomOf="@+id/textInputFileSize"
+        app:layout_constraintBottom_toBottomOf="@+id/textInputFileSizeLayout"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/textInputFileSize"
-        app:layout_constraintTop_toTopOf="@+id/textInputFileSize" />
+        app:layout_constraintStart_toEndOf="@+id/textInputFileSizeLayout"
+        app:layout_constraintTop_toTopOf="@+id/textInputFileSizeLayout" />
 
     <Button
-        android:id="@+id/buttonConection"
+        android:id="@+id/buttonSpeedList"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:background="@drawable/button_style"
-        android:onClick="buttonConnectionOnClick"
         android:text="@string/vel_bit_s"
         android:textAllCaps="false"
-        app:layout_constraintBottom_toBottomOf="@+id/textInputConnectionSpeed"
+        app:layout_constraintBottom_toBottomOf="@+id/textInputConnectionSpeedLayout"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/textInputConnectionSpeed"
-        app:layout_constraintTop_toBottomOf="@+id/textInputFileSize" />
+        app:layout_constraintStart_toEndOf="@+id/textInputConnectionSpeedLayout"
+        app:layout_constraintTop_toBottomOf="@+id/textInputFileSizeLayout" />
 
     <SeekBar
-        android:id="@+id/seekBar"
+        android:id="@+id/marginErrorSlider"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -102,10 +101,10 @@
         android:progress="0"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/error_margin" />
+        app:layout_constraintTop_toBottomOf="@+id/errorMarginDisplay" />
 
     <TextView
-        android:id="@+id/error_margin"
+        android:id="@+id/errorMarginDisplay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -123,7 +122,7 @@
         android:background="?android:attr/listDivider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/result" />
+        app:layout_constraintTop_toBottomOf="@+id/timeResult" />
 
     <View
         android:id="@+id/divider2"
@@ -133,6 +132,6 @@
         android:background="?android:attr/listDivider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputConnectionSpeed" />
+        app:layout_constraintTop_toBottomOf="@+id/textInputConnectionSpeedLayout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

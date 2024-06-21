@@ -4,42 +4,27 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.widget.Button
-import android.widget.EditText
+import android.view.View
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
-import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import br.com.clust3rr.calculatordownload.databinding.ActivityMainBinding
 import kotlin.math.floor
 
-class MainActivity : AppCompatActivity() {
-    private var mFileSize: EditText? = null
-    private var mConnectionSpeed: EditText? = null
-    private var mBtnFile: Button? = null
-    private var mBtnConnection: Button? = null
-    private var mResult: TextView? = null
-    private var mTax: TextView? = null
-    private var mMarginRate: SeekBar? = null
+class MainActivity : AppCompatActivity(), TextWatcher {
     private lateinit var mCharSequenceFileType: Array<String>
     private lateinit var mCharSequenceConnectionType: Array<String>
+
+    private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        mFileSize = findViewById(R.id.textInputEditFileSize)
-        mConnectionSpeed = findViewById(R.id.textInputEditConnectionSpeed)
-        mBtnFile = findViewById(R.id.buttonFile)
-        mBtnConnection = findViewById(R.id.buttonConection)
-        mMarginRate = findViewById(R.id.seekBar)
-        mResult = findViewById(R.id.result)
-        mTax = findViewById(R.id.error_margin)
+        binding.marginErrorSlider.progress = DEFAULT_MARGIN
+        binding.errorMarginDisplay.text = getString(R.string.errorMargin, DEFAULT_MARGIN)
 
-        mMarginRate!!.progress = DEFAULT_MARGIN
-        mTax!!.text = getString(R.string.errorMargin, DEFAULT_MARGIN)
-
-        //
         mCharSequenceFileType = arrayOf(
             getString(R.string.size_bits),
             getString(R.string.size_bytes),
@@ -68,63 +53,43 @@ class MainActivity : AppCompatActivity() {
             getString(R.string.vel_GB_s)
         )
 
-        mFileSize!!.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
-            }
-
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-            }
-
-            override fun afterTextChanged(s: Editable) {
-                updateResult()
-            }
-        })
-
-        mConnectionSpeed!!.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
-            }
-
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-            }
-
-            override fun afterTextChanged(s: Editable) {
-                updateResult()
-            }
-        })
-
-        mMarginRate!!.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+        binding.textInputFileSize.addTextChangedListener(this)
+        binding.textInputConnectionSpeed.addTextChangedListener(this)
+        binding.marginErrorSlider.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                mTax!!.text = getString(R.string.errorMargin, progress)
+                binding.errorMarginDisplay. text = getString(R.string.errorMargin, progress)
             }
 
-            override fun onStartTrackingTouch(seekBar: SeekBar) {
-            }
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
 
             override fun onStopTrackingTouch(seekBar: SeekBar) {
                 updateResult()
             }
         })
 
+        binding.buttonFileSizeList.setOnClickListener { buttonFileOnClick() }
+        binding.buttonSpeedList.setOnClickListener { buttonConnectionOnClick() }
+
         updateResult()
     }
 
     private fun updateResult() {
-        if (mFileSize != null && mConnectionSpeed != null && mResult != null) {
-            val fs = mFileSize!!.text.toString()
-            val cs = mConnectionSpeed!!.text.toString()
-            val mr = mMarginRate!!.progress
+        val fs = binding.textInputFileSize.text.toString()
+        val cs =  binding.textInputConnectionSpeed.text.toString()
+        val mr = binding.marginErrorSlider.progress
 
-            if (fs == "" || cs == "") mResult!!.text = getString(R.string.noTime)
-            else mResult!!.text = calculateTimeToDownload(fs, cs, mr)
-        }
+        binding.timeResult.text = if(fs.isBlank() || cs.isBlank())
+            getString(R.string.noTime)
+        else
+            calculateTimeToDownload(fs, cs, mr)
     }
 
-    fun buttonFileOnClick() {
+    private fun buttonFileOnClick() {
         val dialog = AlertDialog.Builder(this)
         dialog.setTitle(R.string.fileSize)
         var position = 0
         var i = 0
-        while (mCharSequenceFileType[i] != mBtnFile!!.text.toString()) {
+        while (mCharSequenceFileType[i] != binding.buttonFileSizeList.text.toString()) {
             position = i + 1
             i++
         }
@@ -133,18 +98,18 @@ class MainActivity : AppCompatActivity() {
             mCharSequenceFileType,
             position
         ) { mDialog: DialogInterface, which: Int ->
-            mBtnFile!!.text = mCharSequenceFileType[which]
+            binding.buttonFileSizeList.text = mCharSequenceFileType[which]
             updateResult()
             mDialog.cancel()
         }.create().show()
     }
 
-    fun buttonConnectionOnClick() {
+    private fun buttonConnectionOnClick() {
         val dialog = AlertDialog.Builder(this)
         dialog.setTitle(R.string.connectionSpeed)
         var position = 0
         var i = 0
-        while (mCharSequenceConnectionType[i] != mBtnConnection!!.text.toString()) {
+        while (mCharSequenceConnectionType[i] != binding.buttonSpeedList.text.toString()) {
             position = i + 1
             i++
         }
@@ -153,7 +118,7 @@ class MainActivity : AppCompatActivity() {
             mCharSequenceConnectionType,
             position
         ) { mDialog: DialogInterface, which: Int ->
-            mBtnConnection!!.text = mCharSequenceConnectionType[which]
+            binding.buttonSpeedList.text = mCharSequenceConnectionType[which]
             updateResult()
             mDialog.cancel()
         }.create().show()
@@ -173,9 +138,7 @@ class MainActivity : AppCompatActivity() {
         var fileSizeBits = 0.0
         var connectionSpeedBits = 0.0
 
-        val fileText = mBtnFile!!.text.toString()
-
-        when(fileText){
+        when(binding.buttonFileSizeList.text.toString()){
             mCharSequenceFileType[0] -> fileSizeBits = fileSize * SIZE_BIT
             mCharSequenceFileType[1] -> fileSizeBits = fileSize * SIZE_BYTE
             mCharSequenceFileType[2] -> fileSizeBits = fileSize * SIZE_KB
@@ -192,9 +155,7 @@ class MainActivity : AppCompatActivity() {
             mCharSequenceFileType[13] -> fileSizeBits = fileSize * SIZE_TiB
         }
 
-        val connectionText = mBtnConnection!!.text.toString()
-
-        when(connectionText){
+        when(binding.buttonSpeedList.text.toString()){
             mCharSequenceConnectionType[0] -> connectionSpeedBits = connectionSpeed * VEL_bit_S
             mCharSequenceConnectionType[1] -> connectionSpeedBits = connectionSpeed * VEL_byte_S
             mCharSequenceConnectionType[2] -> connectionSpeedBits = connectionSpeed * VEL_Kb_S
@@ -241,6 +202,14 @@ class MainActivity : AppCompatActivity() {
         } else if (timeInSeconds >= TIME_S) {
             floor(timeInSeconds).toInt().toString() + "" + second
         } else getString(R.string.noTime)
+    }
+
+    override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+
+    override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+
+    override fun afterTextChanged(s: Editable) {
+        updateResult()
     }
 
     companion object {
