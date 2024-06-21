@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- TODO: use suffix-->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/inputFileSizeLayout"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -38,11 +39,14 @@
         android:backgroundTint="@color/colorAccent"
         android:text="@string/size_si_giga_byte"
         android:textAllCaps="false"
+        android:maxWidth="140sp"
+        android:lines="2"
         app:layout_constraintBottom_toBottomOf="@+id/inputFileSizeLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/inputFileSizeLayout"
         app:layout_constraintTop_toTopOf="@+id/inputFileSizeLayout" />
 
+    <!-- TODO: use suffix-->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/inputConnectionSpeedLayout"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -71,6 +75,8 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonConnectionSpeedList"
         android:layout_width="wrap_content"
+        android:maxWidth="140sp"
+        android:lines="2"
         android:layout_height="wrap_content"
         android:layout_margin="8sp"
         android:backgroundTint="@color/colorAccent"
@@ -129,7 +135,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="16sp"
         android:text="@string/noTime"
-        android:textSize="18sp"
+        android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/divider2" />

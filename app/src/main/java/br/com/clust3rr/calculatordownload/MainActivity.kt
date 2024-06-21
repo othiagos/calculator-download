@@ -5,11 +5,9 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.SeekBar
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import br.com.clust3rr.calculatordownload.databinding.ActivityMainBinding
-import java.lang.Math.pow
-import kotlin.math.exp
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlin.math.floor
 
 class MainActivity : AppCompatActivity(), TextWatcher, SeekBar.OnSeekBarChangeListener {
@@ -77,19 +75,16 @@ class MainActivity : AppCompatActivity(), TextWatcher, SeekBar.OnSeekBarChangeLi
     }
 
     private fun buttonFileOnClick() {
-        val dialog = AlertDialog.Builder(this)
+        val dialog = MaterialAlertDialogBuilder(this)
         dialog.setTitle(R.string.fileSize)
-        var position = 0
-        var i = 0
-        while (listFileSizeMeasurementType[i] != binding.buttonFileSizeList.text.toString()) {
-            position = i + 1
-            i++
-        }
+        val position = listFileSizeMeasurementType.indexOf(
+            binding.buttonFileSizeList.text.toString()
+        )
 
         dialog.setSingleChoiceItems(
             listFileSizeMeasurementType,
             position
-        ) { mDialog: DialogInterface, which: Int ->
+        ){ mDialog: DialogInterface, which: Int ->
             binding.buttonFileSizeList.text = listFileSizeMeasurementType[which]
             updateResult()
             mDialog.cancel()
@@ -97,14 +92,11 @@ class MainActivity : AppCompatActivity(), TextWatcher, SeekBar.OnSeekBarChangeLi
     }
 
     private fun buttonConnectionOnClick() {
-        val dialog = AlertDialog.Builder(this)
+        val dialog = MaterialAlertDialogBuilder(this)
         dialog.setTitle(R.string.connectionSpeed)
-        var position = 0
-        var i = 0
-        while (listConnectionSpeedMeasurementType[i] != binding.buttonConnectionSpeedList.text.toString()) {
-            position = i + 1
-            i++
-        }
+        val position = listConnectionSpeedMeasurementType.indexOf(
+            binding.buttonConnectionSpeedList.text.toString()
+        )
 
         dialog.setSingleChoiceItems(
             listConnectionSpeedMeasurementType,
