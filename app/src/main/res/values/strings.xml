@@ -21,10 +21,10 @@
     <string name="size_si_giga_byte" translatable="false">Gigabytes (GBs)</string>
     <string name="size_si_tera_byte" translatable="false">Terabytes (TBs)</string>
 
-    <string name="size_iec_kilo_byte" translatable="false">Kibibytes (KBs)</string>
-    <string name="size_iec_mega_byte" translatable="false">Mebibytes (MBs)</string>
-    <string name="size_iec_giga_byte" translatable="false">Gibibytes (GBs)</string>
-    <string name="size_iec_tera_byte" translatable="false">Tebibytes (TBs)</string>
+    <string name="size_iec_kilo_byte" translatable="false">Kibibytes (KiBs)</string>
+    <string name="size_iec_mega_byte" translatable="false">Mebibytes (MiBs)</string>
+    <string name="size_iec_giga_byte" translatable="false">Gibibytes (GiBs)</string>
+    <string name="size_iec_tera_byte" translatable="false">Tebibytes (TiBs)</string>
 
     <!-- Connection Speed -->
     <string name="speed_bit_s" translatable="false">bit/s (bps)</string>
