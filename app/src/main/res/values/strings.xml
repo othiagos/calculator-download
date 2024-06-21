@@ -13,29 +13,29 @@
     <string name="highTime">More than a year</string>
     <string name="noTime">Fill in the fields first!</string>
 
-    <string name="size_bits" translatable="false">Bit (b)</string>
-    <string name="size_bytes" translatable="false">Byte (B)</string>
-    <string name="size_KB" translatable="false">KByte (KB)</string>
-    <string name="size_MB" translatable="false">MByte (MB)</string>
-    <string name="size_GB" translatable="false">GByte (GB)</string>
-    <string name="size_TB" translatable="false">TByte (TB)</string>
-    <string name="size_Kb" translatable="false">Kbit (Kb)</string>
-    <string name="size_Mb" translatable="false">Mbit (Mb)</string>
-    <string name="size_Gb" translatable="false">Gbit (Gb)</string>
-    <string name="size_Tb" translatable="false">Tbit (Tb)</string>
-    <string name="size_KiB" translatable="false">Kibit (KiB)</string>
-    <string name="size_MiB" translatable="false">Mibit (KiB)</string>
-    <string name="size_GiB" translatable="false">Gibit (KiB)</string>
-    <string name="size_TiB" translatable="false">Tibit (KiB)</string>
+    <!-- Connection Speed -->
+    <string name="size_si_byte" translatable="false">Bytes (Bs)</string>
 
-    <string name="vel_bit_s" translatable="false">bit/s (bps)</string>
-    <string name="vel_byte_s" translatable="false">Byte/s (Bps)</string>
-    <string name="vel_Kb_s" translatable="false">Kilobit/s (Kbps)</string>
-    <string name="vel_KB_s" translatable="false">Kilobyte/s (KBps)</string>
-    <string name="vel_Mb_s" translatable="false">Megabit/s (Mbps)</string>
-    <string name="vel_MB_s" translatable="false">Megabyte/s (MBps)</string>
-    <string name="vel_Gb_s" translatable="false">Gigabit/s (Gbps)</string>
-    <string name="vel_GB_s" translatable="false">Gigabyte/s (GBps)</string>
+    <string name="size_si_kilo_byte" translatable="false">Kilobytes (KBs)</string>
+    <string name="size_si_mega_byte" translatable="false">Megabytes (MBs)</string>
+    <string name="size_si_giga_byte" translatable="false">Gigabytes (GBs)</string>
+    <string name="size_si_tera_byte" translatable="false">Terabytes (TBs)</string>
+
+    <string name="size_iec_kilo_byte" translatable="false">Kibibytes (KBs)</string>
+    <string name="size_iec_mega_byte" translatable="false">Mebibytes (MBs)</string>
+    <string name="size_iec_giga_byte" translatable="false">Gibibytes (GBs)</string>
+    <string name="size_iec_tera_byte" translatable="false">Tebibytes (TBs)</string>
+
+    <!-- Connection Speed -->
+    <string name="speed_bit_s" translatable="false">bit/s (bps)</string>
+    <string name="speed_kilo_bit_s" translatable="false">Kilobit/s (Kbps)</string>
+    <string name="speed_mega_bit_s" translatable="false">Megabit/s (Mbps)</string>
+    <string name="speed_giga_bit_s" translatable="false">Gigabit/s (Gbps)</string>
+
+    <string name="speed_byte_s" translatable="false">Byte/s (Bps)</string>
+    <string name="speed_kilo_byte_s" translatable="false">Kilobyte/s (KBps)</string>
+    <string name="speed_mega_byte_s" translatable="false">Megabyte/s (MBps)</string>
+    <string name="speed_giga_byte_s" translatable="false">Gigabyte/s (GBps)</string>
 
     <string name="fileSize">File size</string>
     <string name="connectionSpeed">Connection Speed</string>

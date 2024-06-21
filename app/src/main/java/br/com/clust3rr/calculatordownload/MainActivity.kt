@@ -8,11 +8,13 @@ import android.widget.SeekBar
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import br.com.clust3rr.calculatordownload.databinding.ActivityMainBinding
+import java.lang.Math.pow
+import kotlin.math.exp
 import kotlin.math.floor
 
-class MainActivity : AppCompatActivity(), TextWatcher {
-    private lateinit var mCharSequenceFileType: Array<String>
-    private lateinit var mCharSequenceConnectionType: Array<String>
+class MainActivity : AppCompatActivity(), TextWatcher, SeekBar.OnSeekBarChangeListener {
+    private lateinit var listFileSizeMeasurementType: Array<String>
+    private lateinit var listConnectionSpeedMeasurementType: Array<String>
 
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
@@ -20,52 +22,45 @@ class MainActivity : AppCompatActivity(), TextWatcher {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        binding.marginErrorSlider.progress = DEFAULT_MARGIN
-        binding.errorMarginDisplay.text = getString(R.string.errorMargin, DEFAULT_MARGIN)
+        listFileSizeMeasurementType = arrayOf(
+            getString(R.string.size_si_byte),
 
-        mCharSequenceFileType = arrayOf(
-            getString(R.string.size_bits),
-            getString(R.string.size_bytes),
-            getString(R.string.size_KB),
-            getString(R.string.size_MB),
-            getString(R.string.size_GB),
-            getString(R.string.size_TB),
-            getString(R.string.size_Kb),
-            getString(R.string.size_Mb),
-            getString(R.string.size_Gb),
-            getString(R.string.size_Tb),
-            getString(R.string.size_KiB),
-            getString(R.string.size_MiB),
-            getString(R.string.size_GiB),
-            getString(R.string.size_TiB)
+            getString(R.string.size_si_kilo_byte),
+            getString(R.string.size_si_mega_byte),
+            getString(R.string.size_si_giga_byte),
+            getString(R.string.size_si_tera_byte),
+
+            getString(R.string.size_iec_kilo_byte),
+            getString(R.string.size_iec_mega_byte),
+            getString(R.string.size_iec_giga_byte),
+            getString(R.string.size_iec_tera_byte)
         )
 
-        mCharSequenceConnectionType = arrayOf(
-            getString(R.string.vel_bit_s),
-            getString(R.string.vel_byte_s),
-            getString(R.string.vel_Kb_s),
-            getString(R.string.vel_KB_s),
-            getString(R.string.vel_Mb_s),
-            getString(R.string.vel_MB_s),
-            getString(R.string.vel_Gb_s),
-            getString(R.string.vel_GB_s)
+        listConnectionSpeedMeasurementType = arrayOf(
+            getString(R.string.speed_bit_s),
+            getString(R.string.speed_kilo_bit_s),
+            getString(R.string.speed_mega_bit_s),
+            getString(R.string.speed_giga_bit_s),
+
+            getString(R.string.speed_byte_s),
+            getString(R.string.speed_kilo_byte_s),
+            getString(R.string.speed_mega_byte_s),
+            getString(R.string.speed_giga_byte_s)
         )
+
+        binding.marginErrorSlider.progress = DEFAULT_ERROR_MARGIN
+        binding.errorMarginDisplay.text = getString(R.string.errorMargin, DEFAULT_ERROR_MARGIN)
 
         binding.inputFileSize.addTextChangedListener(this)
         binding.inputConnectionSpeed.addTextChangedListener(this)
-        binding.marginErrorSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                binding.errorMarginDisplay. text = getString(R.string.errorMargin, progress)
-            }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                updateResult()
-            }
-        })
+        binding.marginErrorSlider.setOnSeekBarChangeListener(this)
 
         binding.buttonFileSizeList.setOnClickListener { buttonFileOnClick() }
         binding.buttonConnectionSpeedList.setOnClickListener { buttonConnectionOnClick() }
+
+        // setup default selection for measurement types
+        binding.buttonFileSizeList.text = getString(R.string.size_si_giga_byte)
+        binding.buttonConnectionSpeedList.text = getString(R.string.speed_mega_byte_s)
 
         updateResult()
     }
@@ -86,16 +81,16 @@ class MainActivity : AppCompatActivity(), TextWatcher {
         dialog.setTitle(R.string.fileSize)
         var position = 0
         var i = 0
-        while (mCharSequenceFileType[i] != binding.buttonFileSizeList.text.toString()) {
+        while (listFileSizeMeasurementType[i] != binding.buttonFileSizeList.text.toString()) {
             position = i + 1
             i++
         }
 
         dialog.setSingleChoiceItems(
-            mCharSequenceFileType,
+            listFileSizeMeasurementType,
             position
         ) { mDialog: DialogInterface, which: Int ->
-            binding.buttonFileSizeList.text = mCharSequenceFileType[which]
+            binding.buttonFileSizeList.text = listFileSizeMeasurementType[which]
             updateResult()
             mDialog.cancel()
         }.create().show()
@@ -106,24 +101,24 @@ class MainActivity : AppCompatActivity(), TextWatcher {
         dialog.setTitle(R.string.connectionSpeed)
         var position = 0
         var i = 0
-        while (mCharSequenceConnectionType[i] != binding.buttonConnectionSpeedList.text.toString()) {
+        while (listConnectionSpeedMeasurementType[i] != binding.buttonConnectionSpeedList.text.toString()) {
             position = i + 1
             i++
         }
 
         dialog.setSingleChoiceItems(
-            mCharSequenceConnectionType,
+            listConnectionSpeedMeasurementType,
             position
         ) { mDialog: DialogInterface, which: Int ->
-            binding.buttonConnectionSpeedList.text = mCharSequenceConnectionType[which]
+            binding.buttonConnectionSpeedList.text = listConnectionSpeedMeasurementType[which]
             updateResult()
             mDialog.cancel()
         }.create().show()
     }
 
     private fun calculateTimeToDownload(size: String, speed: String, margin: Int): String? {
-        var fileSize: Double = 0.0
-        var connectionSpeed: Double = 0.0
+        var fileSize = 0.0
+        var connectionSpeed = 0.0
 
         try {
             fileSize = size.toDouble()
@@ -133,36 +128,46 @@ class MainActivity : AppCompatActivity(), TextWatcher {
             return null
         }
 
-        val fileSizeBits: Double = when(binding.buttonFileSizeList.text.toString()){
-            mCharSequenceFileType[0] -> fileSize * SIZE_BIT
-            mCharSequenceFileType[1] -> fileSize * SIZE_BYTE
-            mCharSequenceFileType[2] -> fileSize * SIZE_KB
-            mCharSequenceFileType[3] -> fileSize * SIZE_MB
-            mCharSequenceFileType[4] -> fileSize * SIZE_GB
-            mCharSequenceFileType[5] -> fileSize * SIZE_TB
-            mCharSequenceFileType[6] -> fileSize * SIZE_Kb
-            mCharSequenceFileType[7] -> fileSize * SIZE_Mb
-            mCharSequenceFileType[8] -> fileSize * SIZE_Gb
-            mCharSequenceFileType[9] -> fileSize * SIZE_Tb
-            mCharSequenceFileType[10] -> fileSize * SIZE_KiB
-            mCharSequenceFileType[11] -> fileSize * SIZE_MiB
-            mCharSequenceFileType[12] -> fileSize * SIZE_GiB
-            mCharSequenceFileType[13] -> fileSize * SIZE_TiB
-            else -> { 0.0 }
-        }
-        val connectionSpeedBits: Double = when(binding.buttonConnectionSpeedList.text.toString()){
-            mCharSequenceConnectionType[0] -> connectionSpeed * VEL_bit_S
-            mCharSequenceConnectionType[1] -> connectionSpeed * VEL_byte_S
-            mCharSequenceConnectionType[2] -> connectionSpeed * VEL_Kb_S
-            mCharSequenceConnectionType[3] -> connectionSpeed * VEL_KB_S
-            mCharSequenceConnectionType[4] -> connectionSpeed * VEL_Mb_S
-            mCharSequenceConnectionType[5] -> connectionSpeed * VEL_MB_S
-            mCharSequenceConnectionType[6] -> connectionSpeed * VEL_Gb_S
-            mCharSequenceConnectionType[7] -> connectionSpeed * VEL_GB_S
+        // TODO: Move to a new object
+        val fileSizeInBits: Double = fileSize * when(binding.buttonFileSizeList.text.toString()){
+            getString(R.string.size_si_byte) -> SIZE_BYTE
+            getString(R.string.size_si_kilo_byte) -> SIZE_SI_KILO_BYTE * SIZE_BYTE
+            getString(R.string.size_si_mega_byte) -> SIZE_SI_MEGA_BYTE * SIZE_BYTE
+            getString(R.string.size_si_giga_byte) -> SIZE_SI_GIGA_BYTE * SIZE_BYTE
+            getString(R.string.size_si_tera_byte) -> SIZE_SI_TERA_BYTE * SIZE_BYTE
+            getString(R.string.size_iec_kilo_byte) -> SIZE_IEC_KILO_BYTE * SIZE_BYTE
+            getString(R.string.size_iec_mega_byte) -> SIZE_IEC_MEGA_BYTE * SIZE_BYTE
+            getString(R.string.size_iec_giga_byte) -> SIZE_IEC_GIGA_BYTE * SIZE_BYTE
+            getString(R.string.size_iec_tera_byte) -> SIZE_IEC_TERA_BYTE * SIZE_BYTE
             else -> { 0.0 }
         }
 
-        val timeInSeconds: Double = fileSizeBits / (connectionSpeedBits * (1 - (margin.toDouble() / 100)))
+        // TODO: Move to a new object
+        val connectionSpeedInBits: Double = connectionSpeed * when(binding.buttonConnectionSpeedList.text.toString()){
+            getString(R.string.speed_bit_s) -> SPEED_BIT_S
+            getString(R.string.speed_byte_s) -> SPEED_BYTE_S
+            getString(R.string.speed_kilo_bit_s) -> SPEED_KILO_BIT_S
+            getString(R.string.speed_mega_bit_s) -> SPEED_MEGA_BIT_S
+            getString(R.string.speed_giga_bit_s) -> SPEED_GIGA_BIT_S
+            getString(R.string.speed_kilo_byte_s) -> SPEED_KILO_BYTE_S
+            getString(R.string.speed_mega_byte_s) -> SPEED_MEGA_BYTE_S
+            getString(R.string.speed_giga_byte_s) -> SPEED_GIGA_BYTE_S
+            else -> { 0.0 }
+        }
+
+        return calculateTimeToDownload(fileSizeInBits, connectionSpeedInBits, margin)
+    }
+
+    private fun calculateTimeToDownload(
+        fileSize: Bits,
+        connectionSpeed: Bits,
+        margin: Int) : String {
+
+        if(margin < 0 || margin > 100)
+            return "Error"
+
+        val _margin = (1.0 + (margin.toDouble() / 100))
+        val timeInSeconds: Seconds = ((fileSize) / connectionSpeed) * _margin
         return timeToSting(timeInSeconds)
     }
 
@@ -195,7 +200,7 @@ class MainActivity : AppCompatActivity(), TextWatcher {
             floor(minutes).toInt().toString() + "" + minute + " " + floor(
                 minutes * 60 % 60
             ).toInt() + "" + second
-        } else if (timeInSeconds >= TIME_S) {
+        } else if (timeInSeconds >= TIME_SECONDS) {
             floor(timeInSeconds).toInt().toString() + "" + second
         } else getString(R.string.noTime)
     }
@@ -207,37 +212,54 @@ class MainActivity : AppCompatActivity(), TextWatcher {
     override fun afterTextChanged(s: Editable) {
         updateResult()
     }
+    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+        binding.errorMarginDisplay. text = getString(R.string.errorMargin, progress)
+    }
+    override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+
+    override fun onStopTrackingTouch(seekBar: SeekBar?) {
+        updateResult()
+    }
 
     companion object {
-        private const val DEFAULT_MARGIN = 5
+        private const val DEFAULT_ERROR_MARGIN = 5
+
+        // FILE SIZE
         private const val SIZE_BIT = 1.0
-        private const val SIZE_BYTE = SIZE_BIT * 8
-        private const val SIZE_KB = 1000 * SIZE_BYTE
-        private const val SIZE_MB = 1000 * SIZE_KB
-        private const val SIZE_GB = 1000 * SIZE_MB
-        private const val SIZE_TB = 1000 * SIZE_GB
-        private const val SIZE_Kb = 1000 * SIZE_BIT
-        private const val SIZE_Mb = 1000 * SIZE_Kb
-        private const val SIZE_Gb = 1000 * SIZE_Mb
-        private const val SIZE_Tb = 1000 * SIZE_Gb
-        private const val SIZE_KiB = 1024 * SIZE_BIT
-        private const val SIZE_MiB = 1024 * SIZE_KiB
-        private const val SIZE_GiB = 1024 * SIZE_MiB
-        private const val SIZE_TiB = 1024 * SIZE_GiB
-        private const val VEL_bit_S = SIZE_BIT
-        private const val VEL_byte_S = SIZE_BYTE
+        private const val SIZE_BYTE = 8.0
 
-        private const val VEL_Kb_S = SIZE_Kb
-        private const val VEL_KB_S = SIZE_KB
-        private const val VEL_Mb_S = SIZE_Mb
-        private const val VEL_MB_S = SIZE_MB
-        private const val VEL_Gb_S = SIZE_Gb
-        private const val VEL_GB_S = SIZE_GB
+        // SI -> 1KB = 10^3
+        private const val SIZE_SI_KILO_BYTE : Double = 1000.0 // 10^3 = 1.000
+        private const val SIZE_SI_MEGA_BYTE : Double = 1000000.0 // 10^6 = 1.000.000
+        private const val SIZE_SI_GIGA_BYTE : Double = 1000000000.0 // 10^9 = 1.000.000
+        private const val SIZE_SI_TERA_BYTE : Double = 1000000000000.0 // 10^12 = 1.000.000
 
-        private const val TIME_S = 1.0
-        private const val TIME_MINUTE = TIME_S * 60
+        // IEC 600274-2 -> 1KiB = 2^10
+        private const val SIZE_IEC_KILO_BYTE : Double = 1024.0 // 2^10 = 1.024
+        private const val SIZE_IEC_MEGA_BYTE : Double = 1048576.0 // 2^20 = 1.048.576
+        private const val SIZE_IEC_GIGA_BYTE : Double = 1073741824.0 // 2^30 = 1.073.741.824
+        private const val SIZE_IEC_TERA_BYTE : Double = 1099511627776.0 // 2^40 = 1.099.511.627.776
+
+        // CONNECTION SPEED
+        private const val SPEED_BIT_S = SIZE_BIT
+        private const val SPEED_KILO_BIT_S = SIZE_SI_KILO_BYTE
+        private const val SPEED_MEGA_BIT_S = SIZE_SI_MEGA_BYTE
+        private const val SPEED_GIGA_BIT_S = SIZE_SI_GIGA_BYTE
+
+        private const val SPEED_BYTE_S = SIZE_BYTE
+        private const val SPEED_KILO_BYTE_S = SIZE_SI_KILO_BYTE * SIZE_BYTE
+        private const val SPEED_MEGA_BYTE_S = SIZE_SI_MEGA_BYTE * SIZE_BYTE
+        private const val SPEED_GIGA_BYTE_S = SIZE_SI_GIGA_BYTE * SIZE_BYTE
+
+        // TIME
+        private const val TIME_SECONDS = 1.0
+        private const val TIME_MINUTE = TIME_SECONDS * 60
         private const val TIME_HOUR = TIME_MINUTE * 60
         private const val TIME_DAY = TIME_HOUR * 24
         private const val TIME_YEAR = TIME_DAY * 365
     }
 }
+
+typealias Bits = Double
+typealias Bytes = Double
+typealias Seconds = Double
